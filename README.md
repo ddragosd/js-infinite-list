@@ -7,9 +7,7 @@ At the time I'm writing this small library I've been looking a lot on the intern
 
 This [link](http://designbeep.com/2011/08/12/12-jquery-infinite-scrollingscroll-read-plugins-for-content-navigation/) for instance, is showing a few jQuery plugins handling infinite scrolling.
 
-The thing that is difficult to accommodate in these plugins is the fact that each case is different. Some plugins may expect JSON content, others may expect HTML. Some plugins depend on browser URL, others let you specify a URL.
-
-There are indeed many plugins for infinite scrolling, but they seem difficult to integrate for particular needs.
+The thing that is difficult to accommodate in these plugins is the fact that each case is different. Some plugins may expect JSON content, others may expect HTML. Some plugins depend on browser URL, others let you specify a URL. Why can't we control these aspects with a single lib and worry about finding a new lib when requirements change ?
 
 ## Infinite List concepts
 
