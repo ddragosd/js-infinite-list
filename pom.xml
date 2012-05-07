@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.js</groupId>
+    <artifactId>infinite-list</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <browserPath>open</browserPath>
+    </properties>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/coffee</directory>
+            </resource>
+        </resources>
+
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.google.jstestdriver</groupId>
+                                    <artifactId>jstestdriver</artifactId>
+                                    <version>1.3.3d</version>
+                                    <classifier>cobertura-patched</classifier>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/test-classes/</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.theoryinpractise</groupId>
+                <artifactId>coffee-maven-plugin</artifactId>
+                <version>1.3.4</version>
+                <executions>
+                    <execution>
+                        <id>coffee</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>coffee</goal>
+                            <goal>minify</goal>
+                        </goals>
+                        <configuration>
+                            <coffeeDir>src/main/coffee</coffeeDir>
+                            <coffeeOutputDirectory>${project.build.directory}/coffee/js/${project.artifactId}</coffeeOutputDirectory>
+                            <compileIndividualFiles>true</compileIndividualFiles>
+                            <bare>false</bare>
+
+                            <version>1.2.0</version>
+
+                            <minifiedFile>${project.build.directory}/coffee/js/${project.artifactId}/${project.artifactId}-${project.version}.min.js</minifiedFile>
+
+                            <setOfFilesToMinify>
+                                <directory>${project.build.directory}/coffee/js/${project.artifactId}</directory>
+                                <includes>
+                                    <include>${project.artifactId}-${project.version}.js</include>
+                                </includes>
+                            </setOfFilesToMinify>
+
+                            <coffeeJoinSets>
+                                <joinSet>
+                                    <id>${project.artifactId}-${project.version}</id>
+                                    <fileSet>
+                                        <directory>${basedir}/src/main/coffee</directory>
+                                        <includes>
+                                            <include>**/*.coffee</include>
+                                        </includes>
+                                    </fileSet>
+                                </joinSet>
+                            </coffeeJoinSets>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>coffee-tests</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>coffee</goal>
+                        </goals>
+                        <configuration>
+                            <coffeeDir>src/test/coffee</coffeeDir>
+                            <coffeeOutputDirectory>${project.build.directory}/test-classes/js</coffeeOutputDirectory>
+                            <compileIndividualFiles>true</compileIndividualFiles>
+                            <bare>false</bare>
+
+                            <version>1.2.0</version>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.googlecode.jstd-maven-plugin</groupId>
+                <artifactId>jstd-maven-plugin</artifactId>
+                <version>1.3.2.5</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <skipTests>${maven.test.skip}</skipTests>
+                    <!-- You might need to adjust this depending on your OS.  On Mac,
+                         this will launch your default browser -DbrowserPath=/usr/bin/firefox -->
+                    <browser>${browserPath}</browser>
+                    <testOutput>${project.build.directory}/surefire-reports</testOutput>
+                    <port>9801</port>
+                    <config>${project.build.directory}/test-classes/jsTestDriver.conf</config>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>run-tests</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.googlecode.jstd-maven-plugin</groupId>
+            <artifactId>jstd-maven-plugin</artifactId>
+            <version>1.3.2.5</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jstd-maven-plugin google code repo</id>
+            <url>http://jstd-maven-plugin.googlecode.com/svn/maven2</url>
+        </repository>
+        <repository>
+            <id>watt-releases</id>
+            <url>http://watt.at:8080/nexus/content/groups/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+            </releases>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>watt-releases</id>
+            <url>http://watt.at:8080/nexus/content/groups/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+            </releases>
+        </pluginRepository>
+        <pluginRepository>
+            <id>jstd-maven-plugin google code repo</id>
+            <url>http://jstd-maven-plugin.googlecode.com/svn/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
