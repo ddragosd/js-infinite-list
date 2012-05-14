@@ -13,12 +13,12 @@ The thing that is difficult to accommodate in these plugins is the fact that eac
 
 In this library I'm trying to clearly isolate the 2 aspects of an Infinite List:
 
-### View: how the list elements look
-#### Are they generated from a template ?
-#### Do they come in HTML ?
-### Domain: Control how data is loaded
-#### What is the URL ?
-#### When to load it ?
+* View: how the list elements look
+ * Are they generated from a template ?
+ * Do they come in HTML ?
+* Domain: Control how data is loaded
+ * What is the URL ?
+ * When to load it ?
 
 This library allows you to customize each of these aspects.
 
