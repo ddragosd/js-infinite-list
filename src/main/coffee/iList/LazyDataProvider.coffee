@@ -39,6 +39,12 @@ class iList.LazyDataProvider
      ###
     gotEmptyResults:    false
 
+    ###
+        This Boolean flag is true when a request to load data is in progress.
+        Only one request at a time is permitted
+     ###
+    isLoading:          false
+
     constructor: ( options ) ->
         {@source, @loadPolicy, @loader, @dataConverter} = options
         @initialize()
@@ -59,6 +65,8 @@ class iList.LazyDataProvider
         Manually load more data
      ###
     loadMore: ->
+        return if @isLoading
+        @isLoading = true
         @loader.loadMore() if not @gotEmptyResults
 
     appendResult: ( result ) =>
@@ -74,6 +82,7 @@ class iList.LazyDataProvider
             @loadMore()
 
     loader_resultHandler: ( event, data, textStatus, jqXHR ) =>
+        @isLoading = false
         convertedData = @dataConverter?( data )
         convertedData ?= data
         @appendResult( convertedData )

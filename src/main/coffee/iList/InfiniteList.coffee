@@ -119,7 +119,7 @@ class iList.InfiniteList
         @appendNewElements( data )
 
     appendNewElements: ( data ) =>
-        console?.log(data)
+        # console?.log(data)
         if ( $.isArray( @dataProvider.source ) )
             # if data is a JSON object, then apply the itemRendererTemplate, templateFunction
             @appendArrayElements( data )

@@ -59,6 +59,7 @@ AsyncTestCase( "LazyDataProvider", {
         assertEquals( 3, dp.getSource().length )
         assertEquals( 1, loadingDataEventCount )
         assertEquals( 1, dataLoadedEventCount )
+        assertFalse( dp.isLoading )
 
         loader.respondWith = ["a","b", "c"]
         manualLoadPolicy.doLoad()
