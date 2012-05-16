@@ -11,13 +11,13 @@ class iList.loadPolicy.WindowScroll extends iList.loadPolicy.AbstractLoadPolicy
     offset : 0
 
     constructor: ( offsetPx ) ->
-        @offset = offsetPx
+        @offset = offsetPx || @offset
         @initialize()
 
     initialize: ->
         $(window).scroll( @window_scrollHandler )
 
-    window_scrollHandler: ->
+    window_scrollHandler: =>
         ###
             Get the view frame for the window - this is the
             top and bottom coordinates of the visible slice of the document.
@@ -25,6 +25,7 @@ class iList.loadPolicy.WindowScroll extends iList.loadPolicy.AbstractLoadPolicy
         viewTop = $( window ).scrollTop()
 
         viewBottom = viewTop + $( window ).height()
+        pos = $(document).height() - @offset
 
-        if  (viewBottom >= $(document).height() - @offset)
+        if  (viewBottom >= pos)
             @triggerLoadEvent("window_scroll")

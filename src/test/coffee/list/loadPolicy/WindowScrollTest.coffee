@@ -4,6 +4,10 @@ TestCase("WindowScrollTest", {
         loadPolicy = new iList.loadPolicy.WindowScroll( 100 )
         assertEquals( 100, loadPolicy.offset)
 
+    testInitializationWithNoPAram: ->
+        loadPolicy = new iList.loadPolicy.WindowScroll()
+        assertEquals(0, loadPolicy.offset)
+
     testScrollTriggersLoadEvent: ->
         loadCount = 0
         loadPolicy = new iList.loadPolicy.WindowScroll( 300 )

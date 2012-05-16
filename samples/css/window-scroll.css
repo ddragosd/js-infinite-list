@@ -1,0 +1,17 @@
+#listLoader.loading > img {
+    display: block;
+}
+
+#listLoader.loaded > img {
+    display: none;
+}
+
+#listLoader.loading > span {
+    display: none;
+}
+
+#listLoader.loaded > span {
+    display: block;
+}
+
+
