@@ -26,7 +26,30 @@ More on these a bit later. For now let's see a quick example.
 
 ## Example
 
-TBD
+First, you need to define the domain of the list.
+
+dataProvider = new iList.LazyDataProvider({
+            loadPolicy:  new iList.loadPolicy.ManualLoadPolicy( "#listLoader" ), # new iList.loadPolicy.iScroll(), new iList.loadPolicy.WindowScroll()
+            loader:    new iList.loader.AjaxDataLoader({
+                                url:    "mysite.com?q='searchString'",
+                                offset: 0, // how may rown to skip
+                                rows:   3, // how many rows to get each time
+                                })
+                        })
+
+Second, you create the list.
+
+list = new iList.InfiniteList( {
+            # VIEW configuration
+            container:              $("#myListContainer"),  // an HTML element
+            itemRendererTemplate:   "<div>{{title}}</div>", // template for each new item to add
+            templateFunction:       Mustache.to_html,       // templating function.
+
+            loaderSelector:         $("#listLoader"),       // an HTML element indicating loading
+
+            # DOMAIN configuration
+            dataProvider:           dataProvider  } )       // source of data for the list
+
 
 ## View: how list elements look
 

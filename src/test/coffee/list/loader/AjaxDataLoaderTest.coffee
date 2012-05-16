@@ -41,7 +41,8 @@ AsyncTestCase( "AjaxDataLoader", {
 
         queue.call("step2: verify the result", ->
             assertEquals( 1, resultCount )
-            assertEquals( 0, faultCount ) )
+            assertEquals( 0, faultCount )
+            assertEquals("offset should have been increased", 1, loader.offset) )
 
         queue.call("step3: test the rown and offset increase", ->
              loader.loadMore()
@@ -51,6 +52,33 @@ AsyncTestCase( "AjaxDataLoader", {
             assertEquals( 2, resultCount )
             assertEquals( 0, faultCount ) )
 
-    testUnsuccessfulCall: ->
-        assertTrue( true )
+    testUnsuccessfulCall: (queue) ->
+        resultCount = 0
+        faultCount = 0
+        url = "/some/article/comments.json"
+
+        loader = new iList.loader.AjaxDataLoader({
+            url: url
+            rows: 1
+            offset: 0
+        })
+
+        $(loader).on("result", -> resultCount++ )
+        $(loader).on("fault", -> faultCount++ )
+
+        @server.respondWith("GET", "#{url}?rows=1&offset=0",
+                                [503, { "Content-Type": "application/json" },
+                                 '{ "error": { "class": "err_cls", "message":"err_msg"} }'])
+
+        assertEquals( 0, resultCount )
+        assertEquals(0, faultCount )
+
+        queue.call("step1: make the call", ->
+                        loader.loadMore()
+                        @server.respond() )
+
+        queue.call("step2: verify the result", ->
+            assertEquals( 0, resultCount )
+            assertEquals( 1, faultCount )
+            assertEquals("offset should not be changed", 0, loader.offset) )
 })
