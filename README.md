@@ -26,20 +26,30 @@ More on these a bit later. For now let's see a quick example.
 
 ## Example
 
-First, you need to define the domain of the list.
+Start by defining the HTML container for the list:
 
-dataProvider = new iList.LazyDataProvider({
-            loadPolicy:  new iList.loadPolicy.ManualLoadPolicy( "#listLoader" ), # new iList.loadPolicy.iScroll(), new iList.loadPolicy.WindowScroll()
+    <div class="myListContainer">
+        <img id="listLoader" src="images/loader.gif"/>
+    </div>
+
+Then define the domain of the list.
+
+    dataProvider = new iList.LazyDataProvider({
+    
+            loadPolicy:  new iList.loadPolicy.ManualLoadPolicy( "#listLoader" ), 
+                         // new iList.loadPolicy.iScroll(), 
+                         // new iList.loadPolicy.WindowScroll()
+                         
             loader:    new iList.loader.AjaxDataLoader({
                                 url:    "mysite.com?q='searchString'",
-                                offset: 0, // how may rown to skip
-                                rows:   3, // how many rows to get each time
+                                offset: 0,         // how may rown to skip
+                                rows:   3,         // how many rows to get each time
                                 })
                         })
 
-Second, you create the list.
+Then create the list, and you're done.
 
-list = new iList.InfiniteList( {
+    list = new iList.InfiniteList( {
             # VIEW configuration
             container:              $("#myListContainer"),  // an HTML element
             itemRendererTemplate:   "<div>{{title}}</div>", // template for each new item to add
