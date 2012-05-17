@@ -42,7 +42,7 @@
 
     var list = new iList.InfiniteList( {
             // VIEW configuration
-            container:              $("tweets"),
+            container:              $("#tweets"),
             itemRendererTemplate:   $("#tweetItem").html(),
             // templating function. you can hook in other templating libs such as Underscore, or any other lib
             templateFunction:       Mustache.to_html,
