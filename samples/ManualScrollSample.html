@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Window Scroll Example with Tweeter</title>
+    <title>Manual Scroll Example with Tweeter</title>
     <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="js/infinite-list-1.0-SNAPSHOT.js"></script>
     <script type="text/javascript" src="js/mustache.js"></script>
@@ -17,7 +17,8 @@
 
 <div id="tweets">
     <p id="listLoader" class="loading">
-        <img src="images/loading.gif" alt="loading_img">
+        <img src="images/loading.gif" alt="loading_img" />
+        <button>Click to load more tweets</button>
         <span><b>Limit reached. To get more tweets update <i style="font-family: Courier">TwitterFeedLoader.MAX_PAGE</i></b></span>
     </p>
 </div>
@@ -32,7 +33,7 @@
 <script type="text/javascript">
 
     var dataProvider = new iList.LazyDataProvider({
-        loadPolicy:     new iList.loadPolicy.WindowScroll(),  // load when window is scrolled to the bottom
+        loadPolicy:     new iList.loadPolicy.ManualLoadPolicy($("#listLoader")),  // load when user clicks the loader
         loader:         new TwitterFeedLoader({
                                             query: "adobe",   // search query
                                             rpp: 10,          // results per page
@@ -52,7 +53,7 @@
             // DOMAIN configuration
             dataProvider:           dataProvider  } )
 
-    // start loading the first page with tweets
+    // start by loading the first page with tweets
     list.loadMore();
 
 </script>

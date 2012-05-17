@@ -116,7 +116,13 @@ class iList.InfiniteList
         if ( @_jqLoader )
             @_jqLoader.removeClass("loading")
             @_jqLoader.addClass("loaded")
+            ###
+                CSS class "end" is added to indicate there is no more data to load
+             ###
+            if ( data.length == 0 )
+                @_jqLoader.addClass("end")
         @appendNewElements( data )
+
 
     appendNewElements: ( data ) =>
         # console?.log(data)

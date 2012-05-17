@@ -53,6 +53,8 @@ AsyncTestCase("InfiniteListTest", {
     testLoadingJSONContent: ( queue ) ->
         url = "/some/article/comments.json"
 
+        loaderInst = @listEl.find("#listLoader")
+
         @collection.getLoader().url = url
         @server.respondWith("GET", "#{url}?rows=3&offset=0",
                                 [200, { "Content-Type": "application/json" },
@@ -63,10 +65,13 @@ AsyncTestCase("InfiniteListTest", {
                     assertEquals( 0, this.listEl.find("div").length ) )
 
         queue.call("wait for the call to process", ->
+                    assertTrue( loaderInst.hasClass("loading") )
                     @server.respond() )
         queue.call("test list is populated", ->
                     assertEquals(3, @collection.source.length )
-                    assertEquals(3, this.listEl.find("div").length ) )
+                    assertEquals(3, @listEl.find("div").length )
+                    assertFalse( loaderInst.hasClass("loading") )
+                    assertTrue( loaderInst.hasClass("loaded") ) )
 
         @server.respondWith("GET", "#{url}?rows=3&offset=3",
                                 [200, { "Content-Type": "application/json" },
@@ -74,8 +79,9 @@ AsyncTestCase("InfiniteListTest", {
 
         queue.call("simulate user click", ->
                     $("#listLoader").trigger("click")
-                    assertEquals( 3, this.listEl.find("div").length )
-                    assertTrue( this.listEl.find("#listLoader").hasClass("loading")) )
+                    assertEquals( 3, @listEl.find("div").length )
+                    assertTrue( loaderInst.hasClass("loading"))
+                    assertFalse( loaderInst.hasClass("loaded")) )
 
         queue.call("wait for the call to process", ->
                     @server.respond() )
@@ -83,7 +89,7 @@ AsyncTestCase("InfiniteListTest", {
         queue.call("test list is populated", ->
                     assertEquals(6, @collection.source.length )
                     assertEquals(6, this.listEl.find("div").length )
-                    assertTrue( this.listEl.find("#listLoader").hasClass("loaded")) )
+                    assertTrue( loaderInst.hasClass("loaded")) )
 
 #    testLoadingHTMLContent: ->
 #        htmlSource = ""

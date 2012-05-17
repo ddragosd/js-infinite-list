@@ -174,6 +174,10 @@ Save a reference to the global object (window in the browser, global on the serv
       if (this._jqLoader) {
         this._jqLoader.removeClass("loading");
         this._jqLoader.addClass("loaded");
+        /*
+                        CSS class "end" is added to indicate there is no more data to load
+        */
+        if (data.length === 0) this._jqLoader.addClass("end");
       }
       return this.appendNewElements(data);
     };

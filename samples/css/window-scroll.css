@@ -1,3 +1,4 @@
+/* loading animation */
 #listLoader.loading > img {
     display: block;
 }
@@ -6,11 +7,24 @@
     display: none;
 }
 
-#listLoader.loading > span {
+/* load more text message */
+
+#listLoader.loaded > button {
+    display: block;
+}
+
+#listLoader.loading > button,
+#listLoader.end > button {
     display: none;
 }
 
+/* indicated there is no more date to load */
+#listLoader.loading > span ,
 #listLoader.loaded > span {
+    display: none;
+}
+
+#listLoader.end > span {
     display: block;
 }
 
