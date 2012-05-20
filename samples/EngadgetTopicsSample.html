@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Window Scroll Example with Tweeter</title>
+    <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="js/infinite-list-1.0-SNAPSHOT.js"></script>
+    <script type="text/javascript" src="js/mustache.js"></script>
+    <script type="text/javascript" src="js/CrossOriginPageLoader.js"></script>
+
+    <link rel="stylesheet" href="css/window-scroll.css">
+</head>
+
+<body>
+
+<h3>Example showing Infinite List with WindowScroll as loading policy</h3>
+
+<div id="posts">
+    <p id="listLoader" class="loading">
+        <img src="images/loading.gif" alt="loading_img">
+        <span><b>Page Limit reached to be nice with Engadget and AnyOrigin.com</span>
+    </p>
+</div>
+
+
+<script type="text/javascript">
+
+    var dataProvider = new iList.LazyDataProviderHTML({
+        dataType:       "html",
+        loadPolicy:     new iList.loadPolicy.WindowScroll(),  // load when window is scrolled to the bottom
+        loader:         new CrossOriginPageLoader({
+                                            url: "http://anyorigin.com/get?url=http%3A//www.engadget.com/topics/page/index.php%3Fa%3Drecap-default-sort-ajax%26postpage%3D"   // source URL
+                                        }),
+        dataConverter: function (data) {
+            return data.contents;
+        },
+
+        itemSelector:   ".recap_entry"
+        })
+
+    var list = new iList.InfiniteList( {
+            // VIEW configuration
+            container:              $("#posts"),
+
+            loaderSelector:         $("#listLoader"),
+
+            // DOMAIN configuration
+            dataProvider:           dataProvider  } )
+
+    // start loading the first page with posts
+    dataProvider.loadMore();
+
+</script>
+
+
+</body>
+
+</html>
