@@ -13,7 +13,9 @@ class iList.loader.AjaxDataLoader extends iList.loader.AjaxBaseLoader
         @Override
      ###
     getNextUrl: ->
-        "#{@url}?rows=#{@rows}&offset=#{@offset}"
+        if ( @url.indexOf("?") < 0 )
+            return "#{@url}?rows=#{@rows}&offset=#{@offset}"
+        return "#{@url}&rows=#{@rows}&offset=#{@offset}"
 
     ###
         @Override

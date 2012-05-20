@@ -4,26 +4,50 @@ AsyncTestCase( "LazyDataProvider", {
         respondWith: ["a","b","c"]
         loadMore: =>
             $(this).trigger("result", [@respondWith, "200", null] )
+    loader : null
+    loadPolicy: null
+
+    setUp: ->
+        @loadPolicy = new iList.loadPolicy.ManualLoadPolicy()
+        @loader = new FakeLoader()
+
 
     testInitialization: ->
         source = []
-        loadPolicy = new iList.loadPolicy.ManualLoadPolicy()
-        loader = new FakeLoader()
+
         dataConverter = -> return "fn"
 
         dp = new iList.LazyDataProvider( {
             source: source,
-            loader: loader,
-            loadPolicy: loadPolicy,
+            loader: @loader,
+            loadPolicy: @loadPolicy,
             dataConverter: dataConverter
         })
 
         assertEquals("json", dp.dataType)
 
         assertSame( source, dp.getSource() )
-        assertSame( loader, dp.loader )
-        assertSame( loadPolicy, dp.loadPolicy )
+        assertSame( @loader, dp.getLoader() )
+        assertSame( @loadPolicy, dp.loadPolicy )
         assertSame( dataConverter, dp.dataConverter )
+
+    testReset: ->
+        source = [1,2,3]
+        dp = new iList.LazyDataProvider( {
+            source: source,
+            loader: @loader,
+            loadPolicy: @loadPolicy
+        })
+
+        assertEquals(3, dp.source.length)
+        assertFalse( dp.gotEmptyResults )
+        dp.gotEmptyResults = true
+
+        dp.reset()
+        assertEquals(0, dp.source.length)
+        assertFalse( dp.gotEmptyResults )
+
+
 
 
     testIntializationWithNoSource: ->

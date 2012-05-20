@@ -38,7 +38,7 @@ class iList.LazyDataProvider
     ###
         The class responsible to load data
      ###
-    loader :            null
+    _loader :            null
 
     ###
         function used to convert the data when it comes from the server
@@ -59,24 +59,37 @@ class iList.LazyDataProvider
     isLoading:          false
 
     constructor: ( options ) ->
-        {@source, @loadPolicy, @loader, @dataConverter} = options
+        {@source, @loadPolicy, @dataConverter} = options
         @dataType = options.dataType if options.dataType
         @initialize()
+        @setLoader( options.loader )
 
     initialize: ->
         @setSourceIfEmpty()
         # TODO: throwIfNoLoadPolicy
-        # TODO: throwIfNoLoader
         $(@loadPolicy).on("load", @loadPolicy_loadHandler)
-        $(@loader).on("result", @loader_resultHandler )
-        # $(@loader).on("fault", @loader_faultHandler )
 
     setSourceIfEmpty: ->
         @source ?= []
 
     getSource:      -> @source
     getLoadPolicy:  -> @loadPolicy
-    getLoader:      -> @loader
+    getLoader:      -> @_loader
+    setLoader: (ldr) ->
+        if ( @_loader )
+            $(@_loader).off("result", @loader_resultHandler)
+        @_loader = ldr
+        @throwIfNullLoader()
+        $(@_loader).on("result", @loader_resultHandler )
+        # need to decide what should be done on fault
+        #$(@_loader).on("fault", @loader_faultHandler )
+
+    throwIfNullLoader: ->
+        throw new Error("You have to provide a non-null loader") if not @_loader
+
+    reset: ->
+        @source = []
+        @gotEmptyResults = false
 
     ###
         Manually load more data
@@ -84,7 +97,7 @@ class iList.LazyDataProvider
     loadMore: ->
         return if @isLoading
         @isLoading = true
-        @loader.loadMore() if not @gotEmptyResults
+        @_loader.loadMore() if not @gotEmptyResults
 
     appendResult: ( result ) =>
         @gotEmptyResults = ( result.length == 0 )
