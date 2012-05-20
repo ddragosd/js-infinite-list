@@ -24,7 +24,7 @@ class iList.loader.AjaxBaseLoader
         return null
 
     _doneHandler: ( data, textStatus, jqXHR ) =>
-        @processResult()
+        @processResult( data )
         $(this).trigger("result", [data, textStatus, jqXHR] )
         @_clearHandlers()
 

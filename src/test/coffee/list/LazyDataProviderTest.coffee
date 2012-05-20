@@ -18,10 +18,13 @@ AsyncTestCase( "LazyDataProvider", {
             dataConverter: dataConverter
         })
 
+        assertEquals("json", dp.dataType)
+
         assertSame( source, dp.getSource() )
         assertSame( loader, dp.loader )
         assertSame( loadPolicy, dp.loadPolicy )
         assertSame( dataConverter, dp.dataConverter )
+
 
     testIntializationWithNoSource: ->
         dp = new iList.LazyDataProvider ( {

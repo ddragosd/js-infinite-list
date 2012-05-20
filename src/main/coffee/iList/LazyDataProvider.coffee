@@ -60,6 +60,7 @@ class iList.LazyDataProvider
 
     constructor: ( options ) ->
         {@source, @loadPolicy, @loader, @dataConverter} = options
+        @dataType = options.dataType if options.dataType
         @initialize()
 
     initialize: ->

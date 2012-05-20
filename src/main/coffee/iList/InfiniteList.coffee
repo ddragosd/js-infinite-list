@@ -27,11 +27,6 @@ class iList.InfiniteList
     templateFunction:       null
 
     ###
-        used when the Ajax returns HTML content, instead of JSON, to identify the new items
-     ###
-    itemRendererSelector:   null
-
-    ###
         if there is another selector in the page that should be used as loading indicator
      ###
     loaderSelector:         null
@@ -63,8 +58,6 @@ class iList.InfiniteList
     throwIfNoItemRenderer:      ->
        if @itemRendererTemplate and not @templateFunction
         throw new Error("You must provide a templateFunction when providing itemRendererTemplate" )
-       if not @itemRendererTemplate and not @templateFunction and not @itemRendererSelector
-        throw new Error("You must provide an itemRendererTemplate, or an templateFunction or an itemRendererSelector")
 
     initialize: ->
         @container = $(@container) if not ( @container instanceof $ )
@@ -102,10 +95,8 @@ class iList.InfiniteList
     appendNewElements: ( data ) =>
         # console?.log(data)
         if ( @dataProvider.dataType in ["json","jsonp", "xml"] )
-            # if data is a JSON object, then apply the itemRendererTemplate, templateFunction
             @appendArrayElements( data )
         else
-            # if data is HTML String then apply the itemRendererSelector
             @appendHTMLElements( data )
 
     appendArrayElements: ( data ) ->
@@ -119,4 +110,7 @@ class iList.InfiniteList
        @templateFunction( @itemRendererTemplate, item )
 
     appendHTMLElements: ( data ) ->
-        @container.append( elem ) for elem in data
+        if ( @_jqLoader )
+            @_jqLoader.before( elem ) for elem in data
+        else
+            @container.append( elem ) for elem in data

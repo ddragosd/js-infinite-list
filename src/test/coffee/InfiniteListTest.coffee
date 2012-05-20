@@ -31,7 +31,6 @@ AsyncTestCase("InfiniteListTest", {
             container:              @listEl,
             itemRendererTemplate:   @itemRendererTemplate,
             templateFunction:       Mustache.to_html,
-            itemSelector:           null,
 
             loaderSelector:         $("#listLoader"),
 
@@ -108,10 +107,6 @@ AsyncTestCase("InfiniteListTest", {
         @list = new iList.InfiniteList( {
             # VIEW configuration
             container:              @listEl,
-            itemRendererTemplate:   @itemRendererTemplate,
-            templateFunction:       Mustache.to_html,
-            itemSelector:           null,
-
             loaderSelector:         $("#listLoader"),
 
             # DOMAIN configuration
