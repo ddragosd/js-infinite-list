@@ -42,32 +42,6 @@ Save a reference to the global object (window in the browser, global on the serv
 
   namespace("iList");
 
-  /*
-      Usage
-  
-      collection = new iList.LazyDataProvider({
-              loadPolicy:  new iList.loadPolicy.ManualLoadPolicy() or  new iList.loadPolicy.iScroll() or new iList.loadPolicy.WindowScroll()
-              loader:    new iList.AjaxDataLoader({
-                                  url:    "mysite.com?q='searchString'",
-                                  offset: 0,
-                                  rows:   15, // how many rows to get each time
-                                  })
-                          })
-  
-      list = new iList.InfiniteList( {
-          # VIEW configuration
-          container:              $(".listing"),
-          itemRendererTemplate:   '<div>{{data.title}}</div>', // jQueryTemplate to create new items
-          templateFunction:       _.template // or Mustache.render
-          itemSelector:           null // used when the Ajax returns HTML content, instead of JSON
-  
-          loaderSelector:         null // if there is another selector in the page that should be used as loader indicator
-  
-          # DOMAIN configuration
-          dataProvider: collection
-                          })
-  */
-
   iList.InfiniteList = (function() {
     /*
             VIEW configuration
@@ -94,12 +68,6 @@ Save a reference to the global object (window in the browser, global on the serv
     */
 
     InfiniteList.prototype.templateFunction = null;
-
-    /*
-            used when the Ajax returns HTML content, instead of JSON, to identify the new items
-    */
-
-    InfiniteList.prototype.itemRendererSelector = null;
 
     /*
             if there is another selector in the page that should be used as loading indicator
@@ -143,9 +111,6 @@ Save a reference to the global object (window in the browser, global on the serv
       if (this.itemRendererTemplate && !this.templateFunction) {
         throw new Error("You must provide a templateFunction when providing itemRendererTemplate");
       }
-      if (!this.itemRendererTemplate && !this.templateFunction && !this.itemRendererSelector) {
-        throw new Error("You must provide an itemRendererTemplate, or an templateFunction or an itemRendererSelector");
-      }
     };
 
     InfiniteList.prototype.initialize = function() {
@@ -183,7 +148,8 @@ Save a reference to the global object (window in the browser, global on the serv
     };
 
     InfiniteList.prototype.appendNewElements = function(data) {
-      if ($.isArray(this.dataProvider.source)) {
+      var _ref;
+      if (((_ref = this.dataProvider.dataType) === "json" || _ref === "jsonp" || _ref === "xml")) {
         return this.appendArrayElements(data);
       } else {
         return this.appendHTMLElements(data);
@@ -212,8 +178,23 @@ Save a reference to the global object (window in the browser, global on the serv
       return this.templateFunction(this.itemRendererTemplate, item);
     };
 
-    InfiniteList.prototype.appendHTMLElements = function() {
-      throw new Error("HTML is not supported currently");
+    InfiniteList.prototype.appendHTMLElements = function(data) {
+      var elem, _i, _j, _len, _len2, _results, _results2;
+      if (this._jqLoader) {
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          elem = data[_i];
+          _results.push(this._jqLoader.before(elem));
+        }
+        return _results;
+      } else {
+        _results2 = [];
+        for (_j = 0, _len2 = data.length; _j < _len2; _j++) {
+          elem = data[_j];
+          _results2.push(this.container.append(elem));
+        }
+        return _results2;
+      }
     };
 
     return InfiniteList;
@@ -237,14 +218,28 @@ Save a reference to the global object (window in the browser, global on the serv
          - loadingData - called when starting to load new data.
          - dataLoaded - called each time after loading a new chunk of data
   
+      By Default, the data is assumed to be an Array, meaning that source property is initialized as an empty Array.
+      To work with HTML String, source property must be initialized with a String value, which could be empty: ""
+  
+      collection = new iList.LazyDataProvider( { source : "" } )
+  
+  
          TODO: discuss the need of a reset functionality ?
   */
 
   iList.LazyDataProvider = (function() {
     /*
-            Array object with the elements in the data provider
+            Array object with the elements in the data provider.
+            It can be initialized by passing a 'source' property to the constructor object.
     */
     LazyDataProvider.prototype.source = null;
+
+    /*
+            The type of data expected from the server.
+            Takes values similar to jQuery.ajax's dataType property: "json" or "jsonp" or "html"
+    */
+
+    LazyDataProvider.prototype.dataType = "json";
 
     /*
             Policy by which a new load should happen
@@ -283,13 +278,19 @@ Save a reference to the global object (window in the browser, global on the serv
       this.loader_resultHandler = __bind(this.loader_resultHandler, this);
       this.loadPolicy_loadHandler = __bind(this.loadPolicy_loadHandler, this);
       this.appendResult = __bind(this.appendResult, this);      this.source = options.source, this.loadPolicy = options.loadPolicy, this.loader = options.loader, this.dataConverter = options.dataConverter;
+      if (options.dataType) this.dataType = options.dataType;
       this.initialize();
     }
 
     LazyDataProvider.prototype.initialize = function() {
-      if (this.source == null) this.source = [];
+      this.setSourceIfEmpty();
       $(this.loadPolicy).on("load", this.loadPolicy_loadHandler);
       return $(this.loader).on("result", this.loader_resultHandler);
+    };
+
+    LazyDataProvider.prototype.setSourceIfEmpty = function() {
+      var _ref;
+      return (_ref = this.source) != null ? _ref : this.source = [];
     };
 
     LazyDataProvider.prototype.getSource = function() {
@@ -316,10 +317,8 @@ Save a reference to the global object (window in the browser, global on the serv
 
     LazyDataProvider.prototype.appendResult = function(result) {
       this.gotEmptyResults = result.length === 0;
-      if ($.isArray(this.source)) {
+      if ($.isArray(result) && $.isArray(this.source)) {
         return this.source = this.source.concat(result);
-      } else {
-        return this.source += result;
       }
     };
 
@@ -331,11 +330,24 @@ Save a reference to the global object (window in the browser, global on the serv
     };
 
     LazyDataProvider.prototype.loader_resultHandler = function(event, data, textStatus, jqXHR) {
-      var convertedData;
       this.isLoading = false;
-      convertedData = typeof this.dataConverter === "function" ? this.dataConverter(data) : void 0;
-      if (convertedData == null) convertedData = data;
+      return this.processResult(data);
+    };
+
+    LazyDataProvider.prototype.processResult = function(data) {
+      var convertedData;
+      convertedData = this.getConvertedData(data);
       this.appendResult(convertedData);
+      return this.triggerLoadedEvent(convertedData);
+    };
+
+    LazyDataProvider.prototype.getConvertedData = function(data) {
+      var convertedData;
+      convertedData = typeof this.dataConverter === "function" ? this.dataConverter(data) : void 0;
+      return convertedData || data;
+    };
+
+    LazyDataProvider.prototype.triggerLoadedEvent = function(convertedData) {
       return $(this).trigger("dataLoaded", [convertedData]);
     };
 
@@ -346,57 +358,194 @@ Save a reference to the global object (window in the browser, global on the serv
 }).call(this);
 
 (function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  namespace("iList");
+
+  /*
+      Loader for HTML text.
+  */
+
+  iList.LazyDataProviderHTML = (function(_super) {
+
+    __extends(LazyDataProviderHTML, _super);
+
+    /*
+            jQuery selector to find the new items to be added to the list
+    */
+
+    LazyDataProviderHTML.prototype.itemSelector = null;
+
+    function LazyDataProviderHTML(options) {
+      LazyDataProviderHTML.__super__.constructor.call(this, options);
+      this.itemSelector = options.itemSelector;
+      this.throwIfNoItemSelector();
+    }
+
+    LazyDataProviderHTML.prototype.throwIfNoItemSelector = function() {
+      if (!this.itemSelector) throw new Error("You must set an itemSelector");
+    };
+
+    LazyDataProviderHTML.prototype.getConvertedData = function(data) {
+      var convertedData, item, items, results;
+      convertedData = LazyDataProviderHTML.__super__.getConvertedData.call(this, data);
+      items = $(convertedData).find(this.itemSelector);
+      results = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          item = items[_i];
+          _results.push(item);
+        }
+        return _results;
+      })();
+      return results;
+    };
+
+    return LazyDataProviderHTML;
+
+  })(iList.LazyDataProvider);
+
+}).call(this);
+
+(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   namespace("iList.loader");
 
-  iList.loader.AjaxDataLoader = (function() {
+  iList.loader.AjaxBaseLoader = (function() {
 
-    AjaxDataLoader.prototype.url = null;
+    AjaxBaseLoader.prototype.url = null;
+
+    AjaxBaseLoader.prototype._xhr = null;
+
+    function AjaxBaseLoader(options) {
+      this._clearHandlers = __bind(this._clearHandlers, this);
+      this._failHandler = __bind(this._failHandler, this);
+      this._doneHandler = __bind(this._doneHandler, this);      this.url = options.url;
+    }
+
+    AjaxBaseLoader.prototype.getNextUrl = function() {
+      return "" + this.url;
+    };
+
+    AjaxBaseLoader.prototype.getXhr = function() {
+      return $.get(this.getNextUrl());
+    };
+
+    AjaxBaseLoader.prototype.loadMore = function() {
+      if (this._xhr) {
+        this._clearHandlers();
+        this._xhr.abort();
+      }
+      this._xhr = this.getXhr();
+      this._xhr.done(this._doneHandler);
+      return this._xhr.fail(this._failHandler);
+    };
+
+    AjaxBaseLoader.prototype.processResult = function(data) {
+      return null;
+    };
+
+    AjaxBaseLoader.prototype._doneHandler = function(data, textStatus, jqXHR) {
+      this.processResult(data);
+      $(this).trigger("result", [data, textStatus, jqXHR]);
+      return this._clearHandlers();
+    };
+
+    AjaxBaseLoader.prototype._failHandler = function(data, textStatus, jqXHR) {
+      $(this).trigger("fault", [data, textStatus, jqXHR]);
+      return this._clearHandlers();
+    };
+
+    AjaxBaseLoader.prototype._clearHandlers = function() {
+      return $(this._xhr).off();
+    };
+
+    return AjaxBaseLoader;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  namespace("iList.loader");
+
+  iList.loader.AjaxDataLoader = (function(_super) {
+
+    __extends(AjaxDataLoader, _super);
 
     AjaxDataLoader.prototype.rows = 30;
 
     AjaxDataLoader.prototype.offset = 0;
 
-    AjaxDataLoader.prototype._xhr = null;
-
     function AjaxDataLoader(options) {
-      this.clearHandlers = __bind(this.clearHandlers, this);
-      this.failHandler = __bind(this.failHandler, this);
-      this.doneHandler = __bind(this.doneHandler, this);      this.url = options.url, this.rows = options.rows, this.offset = options.offset;
+      AjaxDataLoader.__super__.constructor.call(this, options);
+      this.rows = options.rows, this.offset = options.offset;
     }
 
-    AjaxDataLoader.prototype.loadMore = function() {
-      if (this._xhr) {
-        this.clearHandlers();
-        this._xhr.abort();
-      }
-      this._xhr = $.get(this.url, {
-        rows: this.rows,
-        offset: this.offset
-      });
-      this._xhr.done(this.doneHandler);
-      return this._xhr.fail(this.failHandler);
+    /*
+            @Override
+    */
+
+    AjaxDataLoader.prototype.getNextUrl = function() {
+      return "" + this.url + "?rows=" + this.rows + "&offset=" + this.offset;
     };
 
-    AjaxDataLoader.prototype.doneHandler = function(data, textStatus, jqXHR) {
-      this.offset += this.rows;
-      $(this).trigger("result", [data, textStatus, jqXHR]);
-      return this.clearHandlers();
-    };
+    /*
+            @Override
+    */
 
-    AjaxDataLoader.prototype.failHandler = function(data, textStatus, jqXHR) {
-      $(this).trigger("fault", [data, textStatus, jqXHR]);
-      return this.clearHandlers();
-    };
-
-    AjaxDataLoader.prototype.clearHandlers = function() {
-      return $(this._xhr).off();
+    AjaxDataLoader.prototype.processResult = function(data) {
+      return this.offset += this.rows;
     };
 
     return AjaxDataLoader;
 
-  })();
+  })(iList.loader.AjaxBaseLoader);
+
+}).call(this);
+
+(function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  namespace("iList.loader");
+
+  iList.loader.AjaxPageLoader = (function(_super) {
+
+    __extends(AjaxPageLoader, _super);
+
+    AjaxPageLoader.prototype.page = 1;
+
+    function AjaxPageLoader(options) {
+      AjaxPageLoader.__super__.constructor.call(this, options);
+      if (options.page) this.page = options.page;
+    }
+
+    /*
+            @Override
+    */
+
+    AjaxPageLoader.prototype.getNextUrl = function() {
+      return "" + this.url + "/" + this.page;
+    };
+
+    /*
+            @Override
+    */
+
+    AjaxPageLoader.prototype.processResult = function(data) {
+      return this.page += 1;
+    };
+
+    return AjaxPageLoader;
+
+  })(iList.loader.AjaxBaseLoader);
 
 }).call(this);
 
