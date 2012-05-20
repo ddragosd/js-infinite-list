@@ -107,5 +107,4 @@ AsyncTestCase( "LazyDataProvider", {
         assertEquals( 2, dataLoadedEventCount )
         assertTrue( dp.gotEmptyResults )
 
-
 })

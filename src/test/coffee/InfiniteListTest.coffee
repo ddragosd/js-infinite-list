@@ -13,7 +13,6 @@ AsyncTestCase("InfiniteListTest", {
 
 
     setUp: ->
-
         $("body").append("""<div class="listing"></div>""")
         @listEl = $(".listing")
         @listEl.append("""<img id="listLoader" src="images/loader.gif"/>""")
@@ -91,30 +90,48 @@ AsyncTestCase("InfiniteListTest", {
                     assertEquals(6, this.listEl.find("div").length )
                     assertTrue( loaderInst.hasClass("loaded")) )
 
-#    testLoadingHTMLContent: ->
-#        htmlSource = ""
-#        collection = new iList.LazyDataProvider({
-#            source:        htmlSource,
-#            loadPolicy:    LazyLoadPolicy.WINDOW_SCROLL,
-#            urlBuilder:    {
-#                                url:    "mysite.com/page1",
-#                                source: htmlSource
-#                                loadMore: ->
-#
-#                           }
-#                        })
-#
-#        list = new iList.InfiniteList( {
-#            # VIEW configuration
-#            container:              $(".listing"),
-#            itemRendererTemplate:   @listItemRenderer, #jQueryTemplate to create new items
-#            itemRendererFunction:   null # used instead of itemRendererTemplate to return the HTML String for new items
-#            itemSelector:           null # used when the Ajax returns HTML content, instead of JSON
-#
-#            loader:                 '<img src="images/loader.gif"/>'
-#            loaderSelector:         null # if there is another selector in the page that should be used
-#
-#            # DOMAIN configuration
-#            dataProvider: collection
-#                            })
+    testLoadingHTMLContent: (queue) ->
+        loaderInst = @listEl.find("#listLoader")
+
+        url = "mysite.com/topics/page/"
+
+
+        @collection = new iList.LazyDataProviderHTML({
+            dataType:       "html",
+            loadPolicy:     new iList.loadPolicy.ManualLoadPolicy( "#listLoader" ),
+            loader:         new iList.loader.AjaxPageLoader({
+                                    url:    url
+                                }),
+            itemSelector:   ".item"
+                        })
+
+        @list = new iList.InfiniteList( {
+            # VIEW configuration
+            container:              @listEl,
+            itemRendererTemplate:   @itemRendererTemplate,
+            templateFunction:       Mustache.to_html,
+            itemSelector:           null,
+
+            loaderSelector:         $("#listLoader"),
+
+            # DOMAIN configuration
+            dataProvider:           @collection  } )
+
+        @server.respondWith("GET", "#{url}/1",
+                    [200, { "Content-Type": "text/html" },
+                    """ <div class="d1"><div class="item"/><div class="item"/><div class="item"/></div> """])
+
+        queue.call("simulate user click", ->
+                    $("#listLoader").trigger("click")
+                    assertEquals( 0, this.listEl.find("div").length ) )
+
+        queue.call("wait for the call to process", ->
+                    assertTrue( loaderInst.hasClass("loading") )
+                    @server.respond() )
+        queue.call("test list is populated", ->
+                    assertEquals(3, @collection.source.length )
+                    assertEquals(3, @listEl.find("div").length )
+                    assertFalse( loaderInst.hasClass("loading") )
+                    assertTrue( loaderInst.hasClass("loaded") ) )
+
 })

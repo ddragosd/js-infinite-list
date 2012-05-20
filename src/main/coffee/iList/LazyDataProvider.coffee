@@ -9,13 +9,26 @@ namespace "iList"
        - loadingData - called when starting to load new data.
        - dataLoaded - called each time after loading a new chunk of data
 
+    By Default, the data is assumed to be an Array, meaning that source property is initialized as an empty Array.
+    To work with HTML String, source property must be initialized with a String value, which could be empty: ""
+
+    collection = new iList.LazyDataProvider( { source : "" } )
+
+
        TODO: discuss the need of a reset functionality ?
  ###
 class iList.LazyDataProvider
     ###
-        Array object with the elements in the data provider
+        Array object with the elements in the data provider.
+        It can be initialized by passing a 'source' property to the constructor object.
      ###
     source:             null
+
+    ###
+        The type of data expected from the server.
+        Takes values similar to jQuery.ajax's dataType property: "json" or "jsonp" or "html"
+     ###
+    dataType:           "json"
 
     ###
         Policy by which a new load should happen
@@ -50,12 +63,15 @@ class iList.LazyDataProvider
         @initialize()
 
     initialize: ->
-        @source ?= []
+        @setSourceIfEmpty()
         # TODO: throwIfNoLoadPolicy
         # TODO: throwIfNoLoader
         $(@loadPolicy).on("load", @loadPolicy_loadHandler)
         $(@loader).on("result", @loader_resultHandler )
         # $(@loader).on("fault", @loader_faultHandler )
+
+    setSourceIfEmpty: ->
+        @source ?= []
 
     getSource:      -> @source
     getLoadPolicy:  -> @loadPolicy
@@ -71,10 +87,8 @@ class iList.LazyDataProvider
 
     appendResult: ( result ) =>
         @gotEmptyResults = ( result.length == 0 )
-        if $.isArray( @source )
+        if $.isArray( result ) and $.isArray( @source )
             @source = @source.concat( result )
-        else
-            @source += result
 
     loadPolicy_loadHandler:  =>
         if not @gotEmptyResults
@@ -83,7 +97,16 @@ class iList.LazyDataProvider
 
     loader_resultHandler: ( event, data, textStatus, jqXHR ) =>
         @isLoading = false
-        convertedData = @dataConverter?( data )
-        convertedData ?= data
+        @processResult( data )
+
+    processResult: ( data ) ->
+        convertedData = @getConvertedData( data )
         @appendResult( convertedData )
+        @triggerLoadedEvent( convertedData )
+
+    getConvertedData: ( data ) ->
+        convertedData = @dataConverter?( data )
+        convertedData || data
+
+    triggerLoadedEvent: (convertedData ) ->
         $(this).trigger("dataLoaded", [convertedData] )

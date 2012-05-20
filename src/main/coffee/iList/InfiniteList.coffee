@@ -1,30 +1,5 @@
 namespace "iList"
 
-###
-    Usage
-
-    collection = new iList.LazyDataProvider({
-            loadPolicy:  new iList.loadPolicy.ManualLoadPolicy() or  new iList.loadPolicy.iScroll() or new iList.loadPolicy.WindowScroll()
-            loader:    new iList.AjaxDataLoader({
-                                url:    "mysite.com?q='searchString'",
-                                offset: 0,
-                                rows:   15, // how many rows to get each time
-                                })
-                        })
-
-    list = new iList.InfiniteList( {
-        # VIEW configuration
-        container:              $(".listing"),
-        itemRendererTemplate:   '<div>{{data.title}}</div>', // jQueryTemplate to create new items
-        templateFunction:       _.template // or Mustache.render
-        itemSelector:           null // used when the Ajax returns HTML content, instead of JSON
-
-        loaderSelector:         null // if there is another selector in the page that should be used as loader indicator
-
-        # DOMAIN configuration
-        dataProvider: collection
-                        })
- ###
 class iList.InfiniteList
     ###
         VIEW configuration
@@ -126,7 +101,7 @@ class iList.InfiniteList
 
     appendNewElements: ( data ) =>
         # console?.log(data)
-        if ( $.isArray( @dataProvider.source ) )
+        if ( @dataProvider.dataType in ["json","jsonp", "xml"] )
             # if data is a JSON object, then apply the itemRendererTemplate, templateFunction
             @appendArrayElements( data )
         else
@@ -143,5 +118,5 @@ class iList.InfiniteList
     createNewItem: ( item ) ->
        @templateFunction( @itemRendererTemplate, item )
 
-    appendHTMLElements: ->
-        throw new Error("HTML is not supported currently" )
+    appendHTMLElements: ( data ) ->
+        @container.append( elem ) for elem in data
