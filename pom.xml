@@ -11,8 +11,8 @@
     </properties>
 
     <scm>
-        <connection>git@github.com:ddragosd/js-infinite-list.git</connection>
-        <developerConnection>https://ddragosd@github.com/ddragosd/js-infinite-list.git</developerConnection>
+        <connection>scm:git:git@github.com:ddragosd/js-infinite-list.git</connection>
+        <developerConnection>scm:git:git@github.com:ddragosd/js-infinite-list.git</developerConnection>
         <url>scm:git:git@github.com:ddragosd/js-infinite-list.git</url>
     </scm>
 
