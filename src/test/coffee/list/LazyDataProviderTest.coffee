@@ -48,8 +48,6 @@ AsyncTestCase( "LazyDataProvider", {
         assertFalse( dp.gotEmptyResults )
 
 
-
-
     testIntializationWithNoSource: ->
         dp = new iList.LazyDataProvider ( {
             loader: new FakeLoader(),

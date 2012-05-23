@@ -10,6 +10,14 @@
         <browserPath>open</browserPath>
     </properties>
 
+    <scm>
+        <connection>git@github.com:ddragosd/js-infinite-list.git</connection>
+        <developerConnection>https://ddragosd@github.com/ddragosd/js-infinite-list.git</developerConnection>
+        <url>scm:git:git@github.com:ddragosd/js-infinite-list.git</url>
+    </scm>
+
+    <url>https://github.com/ddragosd/js-infinite-list</url>
+
     <build>
         <resources>
             <resource>
