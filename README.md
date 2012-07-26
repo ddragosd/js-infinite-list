@@ -1,9 +1,19 @@
 # InfiniteList
 
-NOTE: Work in progress. Not ready for any use at the moment. Please check back later.
+Javascript library with support for infinite scrolling.
+This library is in beta state, with a 95.6% Code Coverage - so you can trust it does what it says as per the code coverage value. 
+
+If you want to see it in action you can check links bellow. Each link shows various configurations supported by this library.
+
+* Auto load content while scrolling down. [Go to demo] (http://ddragosd.github.com/js-infinite-list/samples/WindowScrollSample.html)
+* Manually load content when user clicks "load more". [Go to demo](http://ddragosd.github.com/js-infinite-list/samples/ManualScrollSample.html)
+* Integration with iScroll. [Go to demo](http://ddragosd.github.com/js-infinite-list/samples/iScrollSample.html)
+* You can also load pre-compiled HTML, not just JSON data. [Go to demo](http://ddragosd.github.com/js-infinite-list/samples/EngadgetTopicsSample.html)
+
+You can combine any source of data ( HTML / JSON ) with custom rules for loading content, called load policies, which are explained bellow.
 
 ## Motivation
-At the time I'm writing this small library I've been looking a lot on the internet, to see how other people solved this problem.
+When I started writing this small library I've been looking a lot on the internet, to see how other people solved this problem.
 
 This [link](http://designbeep.com/2011/08/12/12-jquery-infinite-scrollingscroll-read-plugins-for-content-navigation/) for instance, is showing a few jQuery plugins handling infinite scrolling.
 
