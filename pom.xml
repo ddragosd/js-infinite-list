@@ -198,8 +198,8 @@
             <url>http://jstd-maven-plugin.googlecode.com/svn/maven2</url>
         </repository>
         <repository>
-            <id>watt-releases</id>
-            <url>http://watt.at:8080/nexus/content/groups/public</url>
+            <id>mc-releases</id>
+            <url>http://nexus.crestin.tv/nexus/content/groups/public</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -210,8 +210,8 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>watt-releases</id>
-            <url>http://watt.at:8080/nexus/content/groups/public</url>
+            <id>mc-releases</id>
+            <url>http://nexus.crestin.tv/nexus/content/groups/public</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
