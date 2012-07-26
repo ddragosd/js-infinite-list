@@ -1,7 +1,7 @@
 # InfiniteList
 
 Javascript library with support for infinite scrolling.
-This library is in beta state.
+This library is in beta state, with a 95.6% Code Coverage - so you can trust it does what it says as per the code coverage value :). 
 
 If you want to see it in action you can check links bellow. Each link shows various configurations supported by this library.
 
