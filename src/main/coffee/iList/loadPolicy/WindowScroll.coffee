@@ -10,12 +10,29 @@ class iList.loadPolicy.WindowScroll extends iList.loadPolicy.AbstractLoadPolicy
      ###
     offset : 0
 
+    ###
+        How much time to wait before asking to load more items, if there is enough space
+        in the initial screen.
+     ###
+    reloadTimeout : 2000
+
     constructor: ( offsetPx ) ->
         @offset = offsetPx || @offset
         @initialize()
 
     initialize: ->
         $(window).scroll( @window_scrollHandler )
+
+        # check if the loaded content is large enough to take the entire screen
+        # by forcing a scroll event
+        @ensureTheEntireWindowIsOccupied(3)
+
+    ensureTheEntireWindowIsOccupied: (maxReloads = 3)=>
+          reloads = 0
+          intervalId = window.setInterval =>
+            window.clearInterval(intervalId) if not @window_scrollHandler() or ++reloads >= maxReloads
+          , @reloadTimeout
+          true
 
     window_scrollHandler: =>
         ###
@@ -29,3 +46,6 @@ class iList.loadPolicy.WindowScroll extends iList.loadPolicy.AbstractLoadPolicy
 
         if  (viewBottom >= pos)
             @triggerLoadEvent("window_scroll")
+            return true
+
+        return false
